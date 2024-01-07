@@ -16,16 +16,16 @@ class SinatraApp < Sinatra::Base
 
   use OmniAuth::Builder do
     provider :spotify,
-    ENV['APP_TOKEN'],
-    ENV['APP_SECRET_TOKEN'],
-    callback_path: "/auth/spotify/callback",
-    scope: 'user-read-private playlist-read-private playlist-read-collaborative playlist-modify-public'
+             ENV['APP_TOKEN'],
+             ENV['APP_SECRET_TOKEN'],
+             callback_path: '/auth/spotify/callback',
+             scope: 'user-read-private playlist-read-private playlist-read-collaborative playlist-modify-public'
   end
 
   get '/' do
     html = <<-HTML
       <form action="/auth/spotify" method="POST" enctype="multipart/form-data">
-          <input type="hidden" name="authenticity_token" value='#{request.env["rack.session"]["csrf"]}'>
+          <input type="hidden" name="authenticity_token" value='#{request.env['rack.session']['csrf']}'>
           <input type="submit">
       </form>
     HTML
@@ -33,8 +33,8 @@ class SinatraApp < Sinatra::Base
   end
 
   get '/auth/:provider/callback' do
-    result = request.env["omniauth.auth"]
-    File.open('.env','a') do |f|
+    result = request.env['omniauth.auth']
+    File.open('.env', 'a') do |f|
       f.write("OAUTH_TOKENS=#{JSON.generate(result)}")
     end
     erb "<a href='/'>Top</a><br>
@@ -43,6 +43,4 @@ class SinatraApp < Sinatra::Base
   end
 end
 
-if __FILE__ == $0
-  SinatraApp.run!
-end
+SinatraApp.run! if __FILE__ == $PROGRAM_NAME
