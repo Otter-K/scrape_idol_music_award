@@ -11,9 +11,9 @@ class PlaylistCreator
 
   class << self
     def prepare_user
-      # ユーザー認証後のTokenでないと高度な検索が通らない仕様？バグ？が存在するのでToken更新
       RSpotify::User.new(JSON.parse(ENV['OAUTH_TOKENS'])).tap do |user|
-        RSpotify.client_token = user.credentials['token']
+        # ユーザー認証後のTokenでないと検索結果が安定しないため、Token更新
+        RSpotify.instance_variable_set(:@client_token, user.credentials['token'])
       end
     end
 
