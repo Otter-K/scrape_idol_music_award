@@ -1,6 +1,7 @@
 require 'rspotify'
 require 'dotenv'
 require 'csv'
+require 'unicode'
 Dotenv.load
 
 class PlaylistCreator
@@ -34,7 +35,12 @@ class PlaylistCreator
     end
 
     def valid?(track, artist)
-      track && track.artists.any? {|tracks_artist| tracks_artist.name.include?(artist)}
+      # 表記揺れがあるため、バリデーション時のみフォーマットしてから見る
+      track && track.artists.any? {|tracks_artist| format_name(tracks_artist.name).include?(format_name(artist))}
+    end
+
+    def format_name(name)
+      Unicode::nfkc(name.downcase).gsub(/[[:space:]]/, '')
     end
 
     def create_playlist(target_name)
