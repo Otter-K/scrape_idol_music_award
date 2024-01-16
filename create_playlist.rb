@@ -11,6 +11,22 @@ class PlaylistCreator
   }.freeze
 
   class << self
+    def create_playlist(target_name)
+      user = prepare_user
+      year, type = parse_target_name(target_name)
+
+      playlist = user.create_playlist!("アイドル楽曲大賞#{year} #{type}部門 1~100位")
+
+      CSV.foreach("output/#{target_name}.csv", headers: true, col_sep: "\t").with_index do |row, _index|
+        sleep 1 # 礼儀のsleep
+        track = track_search(row['title'], row['artist'])
+        playlist.add_tracks!([track]) #配列じゃないと追加できないためArray化
+        puts "プレイリスト追加: #{row['title']}/#{row['artist']}"
+      end
+    end
+
+    private
+
     def prepare_user
       RSpotify::User.new(JSON.parse(ENV['OAUTH_TOKENS'])).tap do |user|
         # ユーザー認証後のTokenでないと検索結果が安定しないため、Token更新
@@ -41,20 +57,6 @@ class PlaylistCreator
 
     def format_name(name)
       Unicode::nfkc(name.downcase).gsub(/[[:space:]]/, '')
-    end
-
-    def create_playlist(target_name)
-      user = prepare_user
-      year, type = parse_target_name(target_name)
-
-      playlist = user.create_playlist!("アイドル楽曲大賞#{year} #{type}部門 1~100位")
-
-      CSV.foreach("output/#{target_name}.csv", headers: true, col_sep: "\t").with_index do |row, _index|
-        sleep 1 # 礼儀のsleep
-        track = track_search(row['title'], row['artist'])
-        playlist.add_tracks!([track]) #配列じゃないと追加できないためArray化
-        puts "プレイリスト追加: #{row['title']}/#{row['artist']}"
-      end
     end
   end
 end
