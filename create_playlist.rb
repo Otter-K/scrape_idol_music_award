@@ -1,6 +1,7 @@
 require 'rspotify'
 require 'dotenv'
 require 'csv'
+require 'unicode'
 Dotenv.load
 
 class PlaylistCreator
@@ -22,6 +23,26 @@ class PlaylistCreator
       [year, TYPE_DICT[raw_type]]
     end
 
+    def track_search(title, artist)
+      track = RSpotify::Track.search("#{title} artist:#{artist}", limit: 1, market: 'JP').first
+      return track if valid?(track, artist)
+
+      track = RSpotify::Track.search("#{title}　#{artist}", limit: 1, market: 'JP').first
+      return track if valid?(track, artist)
+
+      # 見つからなかったら世界で一番短い曲を入れる
+      RSpotify::Track.find('5oD2Z1OOx1Tmcu2mc9sLY2') # Napalm Death/You Suffer
+    end
+
+    def valid?(track, artist)
+      # 表記揺れがあるため、バリデーション時のみフォーマットしてから見る
+      track && track.artists.any? {|tracks_artist| format_name(tracks_artist.name).include?(format_name(artist))}
+    end
+
+    def format_name(name)
+      Unicode::nfkc(name.downcase).gsub(/[[:space:]]/, '')
+    end
+
     def create_playlist(target_name)
       user = prepare_user
       year, type = parse_target_name(target_name)
@@ -29,16 +50,9 @@ class PlaylistCreator
       playlist = user.create_playlist!("アイドル楽曲大賞#{year} #{type}部門 1~100位")
 
       CSV.foreach("output/#{target_name}.csv", headers: true, col_sep: "\t").with_index do |row, _index|
-        # OPTIMIZE: 検索クエリ("artist:"クエリを安定して使えないか)
-        query = "#{row['title']}　#{row['artist']}"
-
-        # 検索に失敗した場合は適当な曲で穴埋めし、後から修正
-        # NOTE:現状のクエリだと正誤問わずなんかしらは返ってきてそう、バリデーションをかけるべきかも
-        sleep 1
-        track = RSpotify::Track.search(query, limit: 1, market: 'JP') ||
-                RSpotify::Track.search('君が代', limit: 1, market: 'JP')
-        playlist.add_tracks!(track)
-
+        sleep 1 # 礼儀のsleep
+        track = track_search(row['title'], row['artist'])
+        playlist.add_tracks!([track]) #配列じゃないと追加できないためArray化
         puts "プレイリスト追加: #{row['title']}/#{row['artist']}"
       end
     end
