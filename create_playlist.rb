@@ -11,7 +11,7 @@ class PlaylistCreator
   }.freeze
 
   class << self
-    def create_playlist(target_name)
+    def main(target_name)
       user = prepare_user
       year, type = parse_target_name(target_name)
 
@@ -64,5 +64,5 @@ end
 if __FILE__ == $PROGRAM_NAME
   RSpotify.authenticate(ENV['APP_TOKEN'], ENV['APP_SECRET_TOKEN'])
   target_name = ARGV[0]
-  PlaylistCreator.create_playlist(target_name)
+  PlaylistCreator.main(target_name)
 end
