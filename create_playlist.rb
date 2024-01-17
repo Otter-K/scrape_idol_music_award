@@ -18,8 +18,8 @@ class PlaylistCreator
       playlist = user.create_playlist!("アイドル楽曲大賞#{year} #{type}部門 1~100位")
 
       CSV.foreach("output/#{target_name}.csv", headers: true, col_sep: "\t").with_index do |row, _index|
-        sleep 1 # 礼儀のsleep
         track = track_search(row['title'], row['artist'])
+        sleep 1
         playlist.add_tracks!([track]) #配列じゃないと追加できないためArray化
         puts "プレイリスト追加: #{row['title']}/#{row['artist']}"
       end
@@ -40,9 +40,11 @@ class PlaylistCreator
     end
 
     def track_search(title, artist)
+      sleep 1
       track = RSpotify::Track.search("#{title} artist:#{artist}", limit: 1, market: 'JP').first
       return track if valid?(track, artist)
 
+      sleep 1
       track = RSpotify::Track.search("#{title}　#{artist}", limit: 1, market: 'JP').first
       return track if valid?(track, artist)
 
