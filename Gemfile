@@ -9,6 +9,7 @@ gem 'omniauth'
 gem 'omniauth-oauth2'
 gem 'omniauth-spotify'
 gem 'rspotify'
+gem 'unicode'
 
 group :development do
   gem 'pry-byebug'
