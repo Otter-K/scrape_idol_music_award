@@ -25,7 +25,7 @@ class SinatraApp < Sinatra::Base
   get '/' do
     html = <<-HTML
       <form action="/auth/spotify" method="POST" enctype="multipart/form-data">
-          <input type="hidden" name="authenticity_token" value='#{request.env['rack.session']['csrf']}'>
+          <input type="hidden" name="authenticity_token" value='#{Rack::Protection::AuthenticityToken.token(request.env['rack.session'])}'>
           <input type="submit">
       </form>
     HTML
