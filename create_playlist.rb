@@ -53,8 +53,10 @@ class PlaylistCreator
     end
 
     def valid?(track, artist)
+      # アーティスト名が一致しているかどうかをチェック
       # 表記揺れがあるため、バリデーション時のみフォーマットしてから見る
-      track && track.artists.any? {|tracks_artist| format_name(tracks_artist.name).include?(format_name(artist))}
+      # MEMO: track.artistsが壊れているケースがあるため、track.album.artistsもチェックする
+      track && (track.artists.any? {|tracks_artist| format_name(tracks_artist.name).include?(format_name(artist))} || track.album.artists.any? {|album_artists| format_name(album_artists.name).include?(format_name(artist))})
     end
 
     def format_name(name)
