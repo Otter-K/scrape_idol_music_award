@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+gem 'csv'
+gem 'bigdecimal'
 gem 'nokogiri'
 gem 'dotenv'
 gem 'puma'
